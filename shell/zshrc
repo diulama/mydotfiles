@@ -1,0 +1,151 @@
+# =============================================================================
+# ZSH Configuration
+# =============================================================================
+
+# Path Configuration
+# -----------------------------------------------------------------------------
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/Users/diu/.codeium/windsurf/bin:$PATH"
+export PATH="/Users/diu/.local/bin:$PATH"
+export PATH="/Users/diu/.bun/bin:$PATH"
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"  # Homebrew Ruby
+
+# Oh My Zsh Configuration
+# -----------------------------------------------------------------------------
+export ZSH="/Users/diu/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+
+# Oh My Zsh Settings
+DISABLE_AUTO_UPDATE="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Plugin Configuration
+# -----------------------------------------------------------------------------
+plugins=(
+  git                     # Git aliases and functions
+  zsh-syntax-highlighting # Syntax highlighting
+  zsh-autosuggestions     # Fish-like autosuggestions
+  docker                  # Docker completions
+  npm                     # NPM completions
+  node                    # Node.js utilities
+  python                  # Python utilities
+  vscode                  # VSCode aliases
+  web-search             # Quick web searches from terminal
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# Node Version Manager (nvm) Configuration
+# -----------------------------------------------------------------------------
+export NVM_DIR="$HOME/.nvm"
+[ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"
+[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Bun Configuration
+# -----------------------------------------------------------------------------
+export BUN_INSTALL="/Users/diu/.bun"
+[ -s "/Users/diu/.bun/_bun" ] && source "/Users/diu/.bun/_bun"
+
+# History Configuration
+# -----------------------------------------------------------------------------
+HISTSIZE=1000000
+SAVEHIST=1000000
+setopt EXTENDED_HISTORY          # Add timestamps to history
+setopt HIST_EXPIRE_DUPS_FIRST   # Delete duplicates first when HISTFILE size exceeds HISTSIZE
+setopt HIST_IGNORE_DUPS         # Ignore duplicated commands history list
+setopt HIST_IGNORE_SPACE        # Ignore commands that start with space
+setopt HIST_VERIFY              # Show command with history expansion before running it
+setopt SHARE_HISTORY            # Share command history data
+
+# Python Configuration
+# -----------------------------------------------------------------------------
+# pipx completions
+autoload -U bashcompinit
+bashcompinit
+eval "$(uv generate-shell-completion zsh)"
+
+# Aliases
+# -----------------------------------------------------------------------------
+# Python
+alias pip="pip3"
+alias python="python3"
+
+# Git
+alias ga="git add ."
+alias gprune="git branch --merged | grep -vE '^\*|main|master|develop' | xargs -n 1 git branch -d"
+
+# Navigation & Utils
+alias hist="history -200"
+alias metrics="sudo powermetrics --samplers smc -i1 -n1"
+alias ll="ls -lah"
+alias path='echo -e ${PATH//:/\\n}'
+alias ports="lsof -i -P -n | grep LISTEN"
+alias ip="curl -s https://api.ipify.org"
+alias localip="ipconfig getifaddr en0"
+alias weather="curl wttr.in"
+
+# Development
+alias mcp="npx @agentdeskai/browser-tools-server"
+alias c="cursor"
+alias nrd="npm run dev"
+alias sz="source ~/.zshrc"
+alias cz="cursor ~/.zshrc"
+alias dc="docker compose"
+alias dps="docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+
+# Functions
+# -----------------------------------------------------------------------------
+# Create a directory and cd into it
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+# Extract various archive formats
+extract() {
+  if [ -f $1 ]; then
+    case $1 in
+      *.tar.bz2)   tar xjf $1     ;;
+      *.tar.gz)    tar xzf $1     ;;
+      *.bz2)       bunzip2 $1     ;;
+      *.rar)       unrar e $1     ;;
+      *.gz)        gunzip $1      ;;
+      *.tar)       tar xf $1      ;;
+      *.tbz2)      tar xjf $1     ;;
+      *.tgz)       tar xzf $1     ;;
+      *.zip)       unzip $1       ;;
+      *.Z)         uncompress $1  ;;
+      *.7z)        7z x $1        ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# Git add, commit, and push in one command
+gacp() {
+  git add .
+  git commit -m "$1"
+  git push
+}
+
+# Find process using a port
+port() {
+  lsof -i ":$1"
+}
+
+# Kill process on a port
+killport() {
+  lsof -ti ":$1" | xargs kill -9
+}
+
+# Quick npm scripts
+nr() {
+  if [ -z "$1" ]
+  then
+    npm run
+  else
+    npm run "$@"
+  fi
+}
